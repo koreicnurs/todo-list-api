@@ -13,17 +13,49 @@ router.post('/', auth, async (req, res) => {
     }
 
     const taskData = {user, title, description, status};
-    const task = new Task(taskData);
-    await task.save();
 
-    res.send({message: 'Task successfully saved', task});
+    try {
+        const task = new Task(taskData);
+        await task.save();
+
+        res.send({message: 'Task successfully saved', task});
+    } catch (e) {
+        res.sendStatus(500);
+    }
+
 });
 
 router.get('/', auth, async (req, res) => {
 
-    const tasks = await Task.find({user: req.user._id});
+    try {
+        const tasks = await Task.find({user: req.user._id});
 
-    res.send(tasks);
+        res.send(tasks);
+    } catch (e) {
+        res.sendStatus(500);
+    }
+});
+
+router.put('/:id', auth, async (req, res) => {
+    const {title, description, status} = req.body;
+    const user = req.user._id;
+
+    const taskData = {user, title, description, status};
+
+    try {
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).send({message: 'task not found!'});
+        }
+        const updateTask = await Task
+          .findByIdAndUpdate(req.params.id, taskData, {new: true})
+          .populate('user', 'username');
+
+        res.send(updateTask);
+    } catch (e) {
+        res.sendStatus(500);
+    }
 });
 
 module.exports = router;
