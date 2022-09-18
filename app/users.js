@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const User = require("../models/User");
+const auth = require("../middleware/auth");
 
 router.post('/', async (req, res) => {
     const {username, password} = req.body;
@@ -52,7 +53,10 @@ router.post('/sessions', async (req, res) => {
     await user.save();
 
     res.send({message: 'User and password correct!', user});
+});
 
+router.get('/secret', auth, async (req, res) => {
+    res.send({message: 'Secret message', username: req.user.username})
 });
 
 module.exports = router;
