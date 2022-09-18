@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const User = require("../models/User");
-const auth = require("../middleware/auth");
 
 router.post('/', async (req, res) => {
     const {username, password} = req.body;
@@ -47,20 +46,15 @@ router.post('/sessions', async (req, res) => {
         const isMatch = await user.checkPassword(req.body.password);
 
         if (!isMatch) {
-            res.status(401).send({error: 'Password is wrong'});
+           return res.status(401).send({error: 'Password is wrong'});
         }
 
         user.generateToken();
         await user.save();
 
-        res.send({message: 'User and password correct!', user});
+        return res.send({message: 'User and password correct!', user});
     } catch (e) {
         res.sendStatus(500);
     }
 });
-
-router.get('/secret', auth, async (req, res) => {
-    res.send({message: 'Secret message', username: req.user.username})
-});
-
 module.exports = router;
